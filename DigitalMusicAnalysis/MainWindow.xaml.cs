@@ -37,24 +37,73 @@ namespace DigitalMusicAnalysis
             filename = openFile("Select Audio (wav) file");
             string xmlfile = openFile("Select Score (xml) file");
 
+            // Full program counter
             var executionTimer = new Stopwatch();
             executionTimer.Start();
             Console.WriteLine("DigitalMusicAnalysis program timer counter start \n");
             Thread check = new Thread(new ThreadStart(updateSlider));
 
 
-               
+            // Timer for load wave  
+            var loadwaveTimer = new Stopwatch();
+            loadwaveTimer.Start();
+            Console.WriteLine("loadWave function timer counter start \n");
             loadWave(filename);
+            loadwaveTimer.Stop();
+            Console.WriteLine("loadWave function timer counter stop. Execution Time: {0} secs \n", loadwaveTimer.Elapsed);
 
+
+            // Timer for freqDomain  
+            var freqDomainTimer = new Stopwatch();
+            Console.WriteLine("freqDomain function timer counter start \n");
+            freqDomainTimer.Start();
             freqDomain();
-            
+            freqDomainTimer.Stop();
+            Console.WriteLine("freqDomain function timer counter stop. Execution Time: {0} secs \n", freqDomainTimer.Elapsed);
 
+            // Timer for sheetmusic 
+            var sheetMusicTimer = new Stopwatch();
+            Console.WriteLine("sheetMusic function timer counter start \n");
+            sheetMusicTimer.Start();
             sheetmusic = readXML(xmlfile);
+            sheetMusicTimer.Stop();
+            Console.WriteLine("sheetMusic  function timer counter stop. Execution Time: {0} secs \n", sheetMusicTimer.Elapsed);
+
+
+            // Timer for onSetDetection
+            var onSetDetectionTimer = new Stopwatch();
+            Console.WriteLine("onsetDetection function timer counter start \n");
+            onSetDetectionTimer.Start();
             onsetDetection();
+            onSetDetectionTimer.Stop();
+            Console.WriteLine("\nonsetDetection  function timer counter stop. Execution Time: {0} secs \n", onSetDetectionTimer.Elapsed);
+
+
+            // Timer for loadImage
+            var loadImageTimer = new Stopwatch();
+            Console.WriteLine("loadImage function timer counter start \n");
+            loadImageTimer.Start();
             loadImage();
-            loadHistogram();
+            loadImageTimer.Stop();
+            Console.WriteLine("loadImage function timer counter stop. Execution Time: {0} secs \n", loadImageTimer.Elapsed);
+
+            // Timer for loadHistogram
+            Console.WriteLine("loadHistogram function timer counter start \n");
+            var loadHistogramTimer = new Stopwatch();
+            loadHistogramTimer.Start(); 
+            loadHistogram();  
+            loadHistogramTimer.Stop(); 
+            Console.WriteLine("loadHistogram function timer counter stop. Execution Time: {0} secs \n", loadHistogramTimer.Elapsed);
+
+
+            // Timer for Playback
+            var playbackTimer = new Stopwatch();
+            Console.WriteLine("playbackTimer function timer counter start \n");
+            playbackTimer.Start();
             playBack();
-        
+            playbackTimer.Stop();
+            Console.WriteLine("playbackTimer function timer counter stop. Execution Time: {0} secs \n", playbackTimer.Elapsed);
+
 
             check.Start();
             button1.Click += zoomIN;
