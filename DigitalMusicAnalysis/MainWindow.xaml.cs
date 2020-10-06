@@ -36,40 +36,32 @@ namespace DigitalMusicAnalysis
             InitializeComponent();
             filename = openFile("Select Audio (wav) file");
             string xmlfile = openFile("Select Score (xml) file");
-            
-            
-            
-            Console.WriteLine("Timer Starts");
-            Stopwatch timer = new Stopwatch();
-            Stopwatch timer2 = new Stopwatch();
+
+            var executionTimer = new Stopwatch();
+            executionTimer.Start();
+            Console.WriteLine("DigitalMusicAnalysis program timer counter start \n");
             Thread check = new Thread(new ThreadStart(updateSlider));
 
 
-            timer.Start(); // Timer starting 
+               
             loadWave(filename);
 
-            timer2.Start();
             freqDomain();
-            timer2.Stop();
-            Console.WriteLine("The execution time for freqDomain object is : " + timer2.Elapsed.ToString() + " secs" );
+            
 
             sheetmusic = readXML(xmlfile);
             onsetDetection();
             loadImage();
             loadHistogram();
             playBack();
-            timer.Stop();
-
-
-
-            Console.WriteLine("Timer Stops");
-            Console.WriteLine( "The execution time of the application is : "+ timer.Elapsed.ToString() + " secs");
+        
 
             check.Start();
-            Console.WriteLine();
             button1.Click += zoomIN;
             button2.Click += zoomOUT;
 
+            executionTimer.Stop();
+            Console.WriteLine("DigitalMusicAnalysis Program timer counter stop. Execution Time: {0} secs \n", executionTimer.Elapsed);
             slider1.ValueChanged += updateHistogram;
             playback.PlaybackStopped += closeMusic;
 
