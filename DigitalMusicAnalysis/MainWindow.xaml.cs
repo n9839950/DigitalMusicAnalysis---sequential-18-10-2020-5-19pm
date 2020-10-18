@@ -14,7 +14,7 @@ using System.Xml;
 using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
 
-namespace DigitalMusicAnalysis
+namespace DigitalMusicAnalysis  
 {
     public partial class MainWindow : Window
     {
@@ -27,7 +27,13 @@ namespace DigitalMusicAnalysis
         private Complex[] twiddles;
         private Complex[] compX;
         private string filename;
-     
+
+        List<int> lengthscomp;
+        List<int> noteStartscomp;
+        List<int> noteStopscomp;
+        List<double> pitchescomp;
+
+
         private enum pitchConv { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
         private double bpm = 70;
 
@@ -47,27 +53,27 @@ namespace DigitalMusicAnalysis
             // Timer for load wave  
             var loadwaveTimer = new Stopwatch();
             loadwaveTimer.Start();
-            Console.WriteLine("loadWave function timer counter start \n");
+            //Console.WriteLine("loadWave function timer counter start \n");
             loadWave(filename);
             loadwaveTimer.Stop();
-            Console.WriteLine("loadWave function timer counter stop. Execution Time: {0} secs \n", loadwaveTimer.Elapsed);
+            //Console.WriteLine("loadWave function timer counter stop. Execution Time: {0} secs \n", loadwaveTimer.Elapsed);
 
 
             // Timer for freqDomain  
             var freqDomainTimer = new Stopwatch();
-            Console.WriteLine("freqDomain function timer counter start \n");
+            //Console.WriteLine("freqDomain function timer counter start \n");
             freqDomainTimer.Start();
             freqDomain();
             freqDomainTimer.Stop();
-            Console.WriteLine("freqDomain function timer counter stop. Execution Time: {0} secs \n", freqDomainTimer.Elapsed);
+            //Console.WriteLine("freqDomain function timer counter stop. Execution Time: {0} secs \n", freqDomainTimer.Elapsed);
 
             // Timer for sheetmusic 
             var sheetMusicTimer = new Stopwatch();
-            Console.WriteLine("sheetMusic function timer counter start \n");
+            //Console.WriteLine("sheetMusic function timer counter start \n");
             sheetMusicTimer.Start();
             sheetmusic = readXML(xmlfile);
             sheetMusicTimer.Stop();
-            Console.WriteLine("sheetMusic  function timer counter stop. Execution Time: {0} secs \n", sheetMusicTimer.Elapsed);
+            //Console.WriteLine("sheetMusic  function timer counter stop. Execution Time: {0} secs \n", sheetMusicTimer.Elapsed);
 
 
             // Timer for onSetDetection
@@ -81,28 +87,28 @@ namespace DigitalMusicAnalysis
 
             // Timer for loadImage
             var loadImageTimer = new Stopwatch();
-            Console.WriteLine("loadImage function timer counter start \n");
+            //Console.WriteLine("loadImage function timer counter start \n");
             loadImageTimer.Start();
             loadImage();
             loadImageTimer.Stop();
-            Console.WriteLine("loadImage function timer counter stop. Execution Time: {0} secs \n", loadImageTimer.Elapsed);
+            //Console.WriteLine("loadImage function timer counter stop. Execution Time: {0} secs \n", loadImageTimer.Elapsed);
 
             // Timer for loadHistogram
-            Console.WriteLine("loadHistogram function timer counter start \n");
+            //Console.WriteLine("loadHistogram function timer counter start \n");
             var loadHistogramTimer = new Stopwatch();
             loadHistogramTimer.Start(); 
             loadHistogram();  
             loadHistogramTimer.Stop(); 
-            Console.WriteLine("loadHistogram function timer counter stop. Execution Time: {0} secs \n", loadHistogramTimer.Elapsed);
+            //Console.WriteLine("loadHistogram function timer counter stop. Execution Time: {0} secs \n", loadHistogramTimer.Elapsed);
 
 
             // Timer for Playback
             var playbackTimer = new Stopwatch();
-            Console.WriteLine("playbackTimer function timer counter start \n");
+            //Console.WriteLine("playbackTimer function timer counter start \n");
             playbackTimer.Start();
             playBack();
             playbackTimer.Stop();
-            Console.WriteLine("playbackTimer function timer counter stop. Execution Time: {0} secs \n", playbackTimer.Elapsed);
+            //Console.WriteLine("playbackTimer function timer counter stop. Execution Time: {0} secs \n", playbackTimer.Elapsed);
 
 
             check.Start();
@@ -110,6 +116,10 @@ namespace DigitalMusicAnalysis
             button2.Click += zoomOUT;
 
             executionTimer.Stop();
+            writingparalleldata();
+            string stfttimer = string.Format("STFT function time taken : {0} secs", timefreq.stftWatch);
+            Console.WriteLine(stfttimer);
+            writingparalleldata();
             Console.WriteLine("DigitalMusicAnalysis Program timer counter stop. Execution Time: {0} secs \n", executionTimer.Elapsed);
             slider1.ValueChanged += updateHistogram;
             playback.PlaybackStopped += closeMusic;
@@ -338,20 +348,13 @@ namespace DigitalMusicAnalysis
                 }
             }
 
-            //foreach (var item in pixelArray)
-            //{
-            //    string data = item.ToString();
-
-            //}
-
+            
 
             //using (var outf = new StreamWriter("datafreq.txt"))
             //    for (int i = 0; i < pixelArray.Length; i++)
             //        outf.WriteLine(pixelArray[i].ToString());
 
-         
-
-
+       
         }
 
         // Onset Detection function - Determines Start and Finish times of a note and the frequency of the note over each duration.
@@ -691,6 +694,50 @@ namespace DigitalMusicAnalysis
 
                 Canvas.SetTop(timeRect[ii], 200);
                 noteStaff.Children.Insert(ii, timeRect[ii]);
+            }
+
+            lengthscomp =  lengths;
+            noteStartscomp = noteStarts;
+            noteStopscomp =  noteStops;
+            pitchescomp =  pitches;
+
+
+        }
+
+        private void writingparalleldata()
+        {
+            stftRep = new timefreq(waveIn.wave, 2048);
+            pixelArray = new float[stftRep.timeFreqData[0].Length * stftRep.wSamp / 2];
+            for (int jj = 0; jj < stftRep.wSamp / 2; jj++)
+            {
+                for (int ii = 0; ii < stftRep.timeFreqData[0].Length; ii++)
+                {
+                    pixelArray[jj * stftRep.timeFreqData[0].Length + ii] = stftRep.timeFreqData[jj][ii];
+                }
+            }
+
+            using (var outf = new StreamWriter("datafreq_parallel.txt"))
+            {
+                for (int i = 0; i < pixelArray.Length; i++)
+                    outf.WriteLine(pixelArray[i].ToString());
+            }
+
+            using (var outf = new StreamWriter("ondetectiondata.txt"))
+            {
+             
+                for (int i = 0; i < lengthscomp.Count; i++)
+                    outf.WriteLine(lengthscomp[i].ToString());
+
+                for (int i = 0; i < noteStartscomp.Count; i++)
+                    outf.WriteLine(noteStartscomp[i].ToString());
+
+                for (int i = 0; i < noteStopscomp.Count; i++)
+                    outf.WriteLine(noteStopscomp[i].ToString());
+
+                for (int i = 0; i < pitchescomp.Count; i++)
+                    outf.WriteLine(pitchescomp[i].ToString());
+
+
             }
 
 
@@ -1132,7 +1179,7 @@ namespace DigitalMusicAnalysis
 
             int ii = (A.Length);
             int jj = (B.Length);
-            
+
 
             while (ii > 0 && jj > 0)
             {
@@ -1189,10 +1236,10 @@ namespace DigitalMusicAnalysis
                 jj = jj - 1;
             }
 
-            System.Console.Out.Write("\n\n----------------  String Matching ------------------\n\n");
+            //System.Console.Out.Write("\n\n----------------  String Matching ------------------\n\n");
 
-            System.Console.Out.Write(AlignA + "\n");
-            System.Console.Out.Write(AlignB + "\n");
+            //System.Console.Out.Write(AlignA + "\n");
+            //System.Console.Out.Write(AlignB + "\n");
 
             string[] returnArray = new string[2];
 
@@ -1200,6 +1247,29 @@ namespace DigitalMusicAnalysis
             returnArray[1] = AlignB;
 
             return returnArray;
+        }
+
+        static bool FileEquals(string path1, string path2)
+        {
+            byte[] file1 = File.ReadAllBytes(path1);
+            byte[] file2 = File.ReadAllBytes(path2);
+
+            if (file1.Length == file2.Length)
+            {
+                for (int i = 0; i < file1.Length; i++)
+                {
+                    if (file1[i] != file2[i])
+                    {
+                        Console.WriteLine("File not same");
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            return false;
+
+
         }
 
     }
